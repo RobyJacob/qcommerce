@@ -13,4 +13,3 @@ public class SaleAggregateByMonth {
   private Integer month;
   private Double sales;
 }
-

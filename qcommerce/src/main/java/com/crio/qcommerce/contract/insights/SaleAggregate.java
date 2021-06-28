@@ -13,4 +13,3 @@ public class SaleAggregate {
   private List<SaleAggregateByMonth> aggregateByMonths;
 
 }
-
