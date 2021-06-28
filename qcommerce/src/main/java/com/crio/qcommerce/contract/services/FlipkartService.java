@@ -10,7 +10,6 @@ import java.util.Comparator;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.Reader;
 import java.time.LocalDate;
 
@@ -26,77 +25,77 @@ import com.opencsv.exceptions.CsvException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 
 public class FlipkartService implements CsvParser, SaleAnalytics {
-    private File file;
+  private File file;
 
-    protected FlipkartService(File file) {
-        this.file = file;
+  protected FlipkartService(File file) {
+    this.file = file;
+  }
+
+  @Override
+  public List<SalesData> parseFileToBean(File file) throws AnalyticsException {
+    List<SalesData> salesData = new ArrayList<>();
+    CsvToBean<SalesData> salesBean = new CsvToBean<>();
+
+    try {
+      Reader reader = new BufferedReader(new FileReader(file));
+
+      salesBean = new CsvToBeanBuilder<SalesData>(reader).withType(SalesData.class).withThrowExceptions(false)
+          .withProfile("flipkart").build();
+
+      salesData = salesBean.parse();
+      List<CsvException> exceptions = salesBean.getCapturedExceptions();
+
+      for (CsvException exception : exceptions) {
+        throw exception;
+      }
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    } catch (CsvRequiredFieldEmptyException e) {
+      throw new AnalyticsException(e.getMessage());
+    } catch (CsvException e) {
+      e.printStackTrace();
     }
 
-    @Override
-    public List<SalesData> parseFileToBean(File file) throws AnalyticsException {
-        List<SalesData> salesData = new ArrayList<>();
-        CsvToBean<SalesData> salesBean = new CsvToBean<>();
+    return salesData;
+  }
 
-        try {
-            Reader reader = new BufferedReader(new FileReader(file));
+  @Override
+  public SaleAggregate getSaleAggregateByYear(int year) throws AnalyticsException {
+    List<SalesData> salesData = parseFileToBean(file);
+    Double totalSales = 0.0;
+    SaleAggregate saleAggregate = new SaleAggregate();
+    Map<Integer, Double> monthSales = new HashMap<>();
+    List<SaleAggregateByMonth> aggregateByMonths = new ArrayList<>();
 
-            salesBean = new CsvToBeanBuilder<SalesData>(reader).withType(SalesData.class).withThrowExceptions(false)
-                    .withProfile("flipkart").build();
+    for (SalesData saleData : salesData) {
+      LocalDate date = LocalDate.parse(saleData.getDate());
+      String transactionStatus = saleData.getTransactionStatus();
 
-            salesData = salesBean.parse();
-            List<CsvException> exceptions = salesBean.getCapturedExceptions();
+      if ((transactionStatus.equalsIgnoreCase("complete") || transactionStatus.equalsIgnoreCase("paid")
+          || transactionStatus.equalsIgnoreCase("shipped")) && date.getYear() == year) {
+        Double amount = saleData.getAmount();
+        Integer month = date.getMonth().getValue();
+        totalSales += amount;
 
-            for (CsvException exception : exceptions) {
-                throw exception;
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (CsvRequiredFieldEmptyException e) {
-            throw new AnalyticsException(e.getMessage());
-        } catch (CsvException e) {
-            e.printStackTrace();
-        }
-
-        return salesData;
+        if (monthSales.containsKey(month))
+          monthSales.put(month, monthSales.get(month) + amount);
+        else
+          monthSales.put(month, amount);
+      }
     }
 
-    @Override
-    public SaleAggregate getSaleAggregateByYear(int year) throws AnalyticsException {
-        List<SalesData> salesData = parseFileToBean(file);
-        Double totalSales = 0.0;
-        SaleAggregate saleAggregate = new SaleAggregate();
-        Map<Integer, Double> monthSales = new HashMap<>();
-        List<SaleAggregateByMonth> aggregateByMonths = new ArrayList<>();
-
-        for (SalesData saleData : salesData) {
-            LocalDate date = LocalDate.parse(saleData.getDate());
-            String transactionStatus = saleData.getTransactionStatus();
-
-            if ((transactionStatus.equalsIgnoreCase("complete") || transactionStatus.equalsIgnoreCase("paid")
-                    || transactionStatus.equalsIgnoreCase("shipped")) && date.getYear() == year) {
-                Double amount = saleData.getAmount();
-                Integer month = date.getMonth().getValue();
-                totalSales += amount;
-
-                if (monthSales.containsKey(month))
-                    monthSales.put(month, monthSales.get(month) + amount);
-                else
-                    monthSales.put(month, amount);
-            }
-        }
-
-        for (Map.Entry<Integer, Double> entry : monthSales.entrySet()) {
-            aggregateByMonths.add(new SaleAggregateByMonth(entry.getKey(), entry.getValue()));
-        }
-
-        Comparator<SaleAggregateByMonth> comparator = Comparator.comparing(SaleAggregateByMonth::getMonth);
-
-        Collections.sort(aggregateByMonths, comparator);
-
-        saleAggregate.setTotalSales(totalSales);
-        saleAggregate.setAggregateByMonths(aggregateByMonths);
-
-        return saleAggregate;
+    for (Map.Entry<Integer, Double> entry : monthSales.entrySet()) {
+      aggregateByMonths.add(new SaleAggregateByMonth(entry.getKey(), entry.getValue()));
     }
+
+    Comparator<SaleAggregateByMonth> comparator = Comparator.comparing(SaleAggregateByMonth::getMonth);
+
+    Collections.sort(aggregateByMonths, comparator);
+
+    saleAggregate.setTotalSales(totalSales);
+    saleAggregate.setAggregateByMonths(aggregateByMonths);
+
+    return saleAggregate;
+  }
 
 }

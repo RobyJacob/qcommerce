@@ -7,5 +7,5 @@ import com.crio.qcommerce.contract.dto.SalesData;
 import com.crio.qcommerce.contract.exceptions.AnalyticsException;
 
 public interface CsvParser {
-    List<SalesData> parseFileToBean(File file) throws AnalyticsException;
+  List<SalesData> parseFileToBean(File file) throws AnalyticsException;
 }

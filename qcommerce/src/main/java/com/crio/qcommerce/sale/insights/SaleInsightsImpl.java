@@ -12,19 +12,19 @@ import com.crio.qcommerce.contract.insights.SaleAggregate;
 
 public class SaleInsightsImpl implements SaleInsights {
 
-    public SaleInsightsImpl() {
-    }
+  public SaleInsightsImpl() {
+  }
 
-    @Override
-    public SaleAggregate getSaleInsights(DataProvider dataProvider, int year) throws IOException, AnalyticsException {
-        String provider = dataProvider.getProvider();
-        File file = dataProvider.resolveFile();
+  @Override
+  public SaleAggregate getSaleInsights(DataProvider dataProvider, int year) throws IOException, AnalyticsException {
+    String provider = dataProvider.getProvider();
+    File file = dataProvider.resolveFile();
 
-        SaleAnalytics saleAnalytics = ServiceBuilder.INSTANCE.getServiceAnalytics(provider, file);
+    SaleAnalytics saleAnalytics = ServiceBuilder.INSTANCE.getServiceAnalytics(provider, file);
 
-        SaleAggregate saleAggregate = saleAnalytics.getSaleAggregateByYear(year);
+    SaleAggregate saleAggregate = saleAnalytics.getSaleAggregateByYear(year);
 
-        return saleAggregate;
-    }
+    return saleAggregate;
+  }
 
 }
