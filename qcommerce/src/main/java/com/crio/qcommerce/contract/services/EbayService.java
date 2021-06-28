@@ -54,8 +54,6 @@ public class EbayService implements CsvParser, SaleAnalytics {
             e.printStackTrace();
         } catch (CsvRequiredFieldEmptyException e) {
             throw new AnalyticsException(e.getMessage());
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (CsvException e) {
             e.printStackTrace();
         }
