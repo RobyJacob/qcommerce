@@ -3,6 +3,7 @@ package com.crio.qcommerce.contract.services;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.FileReader;
 import java.io.Reader;
 import java.time.LocalDate;
@@ -34,7 +35,7 @@ public class AmazonService implements CsvParser, SaleAnalytics {
   @Override
   public List<SalesData> parseFileToBean(File file) throws AnalyticsException {
     List<SalesData> salesData = new ArrayList<>();
-    CsvToBean<SalesData> salesBean = new CsvToBean<>();
+    CsvToBean<SalesData> salesBean = null;
 
     try {
       Reader reader = new BufferedReader(new FileReader(file));
@@ -45,6 +46,8 @@ public class AmazonService implements CsvParser, SaleAnalytics {
       salesData = salesBean.parse();
       List<CsvException> exceptions = salesBean.getCapturedExceptions();
 
+      reader.close();
+
       for (CsvException exception : exceptions) {
         throw exception;
       }
@@ -53,6 +56,8 @@ public class AmazonService implements CsvParser, SaleAnalytics {
     } catch (CsvRequiredFieldEmptyException e) {
       throw new AnalyticsException(e.getMessage());
     } catch (CsvException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
       e.printStackTrace();
     }
 
