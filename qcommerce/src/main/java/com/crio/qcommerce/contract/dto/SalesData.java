@@ -36,7 +36,7 @@ public class SalesData {
   @Override
   public String toString() {
     String formatedText = String.format(
-        "Amount = %f\nDate = %s%nTransaction_id = %d%nExternal_transaction_id = %s%nUser_id = %s%nTransaction_status = %s%n",
+        "Amount = %f%nDate = %s%nTransaction_id = %d%nExternal_transaction_id = %s%nUser_id = %s%nTransaction_status = %s%n",
         amount, date, transactionId, externalTransactionId, userId, transactionStatus);
     return formatedText;
   }
