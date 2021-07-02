@@ -2,9 +2,10 @@ package com.crio.qcommerce.contract.services;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.FileReader;
 import java.io.Reader;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ public class AmazonService implements CsvParser, SaleAnalytics {
     CsvToBean<SalesData> salesBean = null;
 
     try {
-      Reader reader = new BufferedReader(new FileReader(file));
+      Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
 
       salesBean = new CsvToBeanBuilder<SalesData>(reader).withType(SalesData.class).withThrowExceptions(false)
           .withProfile("amazon").build();

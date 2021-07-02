@@ -8,9 +8,10 @@ import java.util.Map;
 import java.util.Collections;
 import java.util.Comparator;
 import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.FileReader;
 import java.io.Reader;
 import java.time.LocalDate;
 
@@ -38,7 +39,7 @@ public class FlipkartService implements CsvParser, SaleAnalytics {
     CsvToBean<SalesData> salesBean = null;
 
     try {
-      Reader reader = new BufferedReader(new FileReader(file));
+      Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
 
       salesBean = new CsvToBeanBuilder<SalesData>(reader).withType(SalesData.class).withThrowExceptions(false)
           .withProfile("flipkart").build();
